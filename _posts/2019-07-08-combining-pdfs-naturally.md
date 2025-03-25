@@ -1,75 +1,51 @@
 ---
-title: 'Combining PDF Documents the Smarter Way'
-date: 2019-07-08
-permalink: /posts/2019/07/combining-pdfs-naturally/
+title: '有关圆周率的碰撞问题'
+date: 2023-07-08
+permalink: /posts/2023/08/collision-pi/
 excerpt_separator: <!--more-->
 toc: true
 tags:
-  - references
-  - bash
+  - 守恒
+  - 圆周率
 ---
+光滑的地面上有两个静止的小木块, 离墙近的质量为$1$Kg, 离墙远的质量为$n$kg,
+现给重的木块一定的速度使其向墙壁方向运动, 假设所有的碰撞都是弹性碰撞,
+那么木块之间的碰撞次数和与墙壁之间的碰撞次数是多少? 这里可以给出这样的数据.
 
-My previous [post]({{ site.baseurl }}{% post_url 2019-06-25-combining-pdfs %}) on combining multiple PDF files had an important caveat that things would end up in the wrong order if you had files with leading ID numbers that started at 1 and ended at 12, you'd end up with PDFs combined in the order 1, 10, 11, 12, 2, 3, ..., 9.
+- n = 1, 发生3次碰撞
+- n = 1e2, 发生31次碰撞
+- n = 1e4, 发生314次碰撞
+- n = 1e6, 发生3141次碰撞
+- n = 1e8, 发生31415次碰撞
+
 <!--more-->
-This is because the default sort in Bash is an alphabetic sort. This is just our standard alphabetic sort, but it gets tripped up when dealing with numbers. We can think of it as a type of 'greedy' algorithm because it sorts all inputs by the first character, before moving onto the second character within each subset. This behavior is fine (and desirable!) for words, but fails with numbers.
 
-We want to use a [natural sort](https://en.wikipedia.org/wiki/Natural_sort_order), which is just an alphabetic sort that treats multi-digit numbers as numbers instead of a collection of characters. A natural sort of our files would combine them in the order 1, 2, 3, 4, 5, ..., 12, 13. That means a natural sort can handle a wider range of numbering styles!
+很意外地出现了圆周率$\pi$这个数字, 在这个看起来跟圆完全无关的问题中居然出现了圆周率真是一个令人意想不到的结果.
+这个问题有很多中解法, 当然最开始我是不会的...这里介绍一种相当巧妙的解法. 首先这个系统是能量的守恒的系统, 那么我们可以写下方程
 
-# How it Works
+$$mv_1^2+Mv_2^2=const$$
 
-This script uses the same basic idea as the first one, but sorting the input files with a natural sort requires some Bash tricks. This time around the code is
+那么很明显两个小木块的速度就在这个椭圆上运动, 我们做一个伸缩变换就可以将椭圆映射到圆上, 即为 $ x_1=\sqrt{m}v_1, x_2=\sqrt{M}v_2 $.
+![](https://raw.githubusercontent.com/ChangChunHe/Sundries/master/init-state.png)
+最开始, 系统是落在绿色的圈所在的位置的, 接着由于动量守恒的原因
 
-```bash
-#!/bin/bash
-if [[ $# -eq 0 ]]; then
-  printf '%s\0' ./*.pdf | sort -zV | xargs -0 gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -sOutputFile=output.pdf
-else
-  printf '%s\0' ./*.pdf | sort -zV xargs -0 gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -sOutputFile=$1
-fi
-```
+$$Mv_2+mv_1 = const$$
 
-This looks complicated, so let's break it down into individual parts. Each part is separated by a `|`, or pipe, which directs the output from one function to the next. If you've ever used magrittr's pipes (`%>%`) in R, the concept is exactly the same.
+对应于$x_1, x_2$的方程为
 
-## `printf`
+$$\sqrt{m}x_1+\sqrt{M}x_2=const$$
 
-The first part of the first Ghostscript line is
+所以下一个状态所在的位置应该是过绿色圆圈, 斜率为$-\sqrt{\frac{m}{M}}$的直线与该圆的交点, 即为下图的2点.
+![](https://raw.githubusercontent.com/ChangChunHe/Sundries/master/init-state-1.png)
+注意到这里质量小的木块会撞到墙壁然后反弹, 所以系统会到达3点, 于是完成两次碰撞. 这里注意到当系统状态到达第一象限的$y=x$左侧就不会再碰撞, 即为图中红线在第一象限的右侧. 下面就是计算什么时候蓝色的圈会运动到红线的左侧了. 注意到$M>>m$, 所以每一次大小木块碰撞的直线的斜率都是很小的, 这里可以近似出
 
-```bash
-printf '%s\0' ./*.pdf
-```
+$$\tan{\theta} = \sqrt{\frac{m}{M}} \sim \theta$$
+所以每次碰撞相当于走了
 
-. The `printf` command is a *very* old C command, ported to Bash as a **shell builtin**. It allows you to print multiple inputs while formatting the output produced. `printf` uses **format specifiers** to tell the function how to print inputs. While it can be used to format integers and doubles, we're going to be dealing with filenames, which are strings, and denoted with `'%s'`.
+$$\theta = 2\sqrt{\frac{m}{M}}$$
 
-When we give `printf` more than one input, we need to tell it what type of **separator** to use, otherwise it will just print all of the inputs in one giant string. If you use a **newline** (`\n`), then `printf` will produce output equivalent to `ls *.pdf`. For our purposes, we want to use a **null terminator** (`\0`) to separate inputs. You can't actually see null terminators in the printed output, but any commands you pass them to will be able to.
+但是一共有整个圆周$2\pi$需要走, 所以最后碰撞的总次数为:
 
-## `sort`
+$$N = [\frac{2\pi}{2\sqrt{\frac{m}{M}}}]  \sim  \pi \sqrt{\frac{M}{m}}$$
 
-The next part of the first Ghostscript line is
-
-```bash
-sort -zV
-```
-
-This is where the magic happens that properly sorts our input files even if their numbers are missing leading zeroes. The `-z` flag tells `sort` to return the sort inputs still separated by null terminators, while the `-V` flag performs a **version sort**, the function's name for a natural sort.
-
-## `xargs`
-
-The final part of the first Ghostscript line is
-
-```bash
-xargs -0 gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -sOutputFile=output.pdf
-```
-
-This is almost identical to the `gs` call in the simpler script. However, that script had `*.pdf` at the end as the "files" argument to `gs`. That won't work for us here as we had to use `printf` and `sort` first to get our document correctly sorted. `xargs` converts the standard input produced by `|` into arguments that `gs` can accept.
-
-The `-0` flag tells the function to expect null terminators as separators instead of spaces or newlines. Without this flag, you'll get an error if any of your PDFs have spaces in their filenames. This is why we've been using null terminators as separators all along; without them our script would be helpless against filenames with spaces in them.
-
-The command we want to use, `gs` in this case, comes *after* `xargs`. You can read this line as `gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -sOutputFile=output.pdf files` where `files` is the naturally sorted list of PDF files produced by the first two parts of the line. And we're done!
-
-## Putting it all Together
-
-When you run this script, it finds all PDF files in a directory, sorts them with a natural sort, and then combines them into a single PDF document. Just like before, you can can supply an output filename.
-
-# Running It
-
-Just like before, we need to make our script executable and add it to our PATH in order to run it. Refer to my previous [post]({{ site.baseurl }}{% post_url 2019-06-25-combining-pdfs %}) for a reminder on how to do so. No caveats about document ID numbers this time, but you're on your own if the publisher decided to just use chapter names with no ID numbers...
+也就是最上面的结果.
