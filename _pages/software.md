@@ -18,32 +18,16 @@ header:
   og_image: "software/spatial_weighting.png"
 ---
 
-As one of my two research agendas involves improving the tools we use to study peace and conflict, a good deal of my time is spent using statistical software. Below you'll find software for working with estimates from Bayesian models and some code that I've written to save time on tasks that I find myself doing over and over again.
 
-# BayesPostEst
+# Pyvaspflow
 
-[![R build status](https://github.com/ShanaScogin/BayesPostEst/workflows/R-CMD-check/badge.svg)](https://github.com/ShanaScogin/BayesPostEst/actions)
-[![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/BayesPostEst)](https://CRAN.R-project.org/package=BayesPostEst)
-[![Codecov test coverage](https://codecov.io/gh/ShanaScogin/BayesPostEst/branch/master/graph/badge.svg)](https://codecov.io/gh/ShanaScogin/BayesPostEst?branch=master)
+针对VASP软件的计算，我开发了一个全自动计算结构性质的Python程序包``pyvaspflow``,由于计算材料的物理化学性质都是有一套完好的流程的，所以我们是可以将其规范化成一个标准的工作流 (workflow) 来进行计算，并在结束以后生成数据库以便结果的分析与讨论。首先介绍一下高通量计算平台的基本架构，基本分成图2-1的四个部分。首先通过用户选择需要计算的项目，例如能带结构计算、态密度计算等，接着网页端把计算的流程编码成机器的指令发送到服务器上提交计算，然后等待计算完毕就可以将生成的数据库返回到网页端可以查询的地方，从而用户可以方便地对数据库进行查询并进行后续的结果分析讨论。具体可以参见``pyvaspflow``的文档，[https://pyvaspflow.readthedocs.io/zh-cn/latest/](https://pyvaspflow.readthedocs.io/zh-cn/latest/)。
 
-I am a developer of the [BayesPostEst](https://cran.r-project.org/package=BayesPostEst) R package for generating postestimation quantities of interest from Bayesian models. The package contains functions for producing regression tables, plotting predicted probabilities, calculating first differences, creating coefficient plots, and many other quantities. You can view the [Journal of Open Source Software](https://joss.theoj.org/) article for the package [here](https://doi.org/10.21105/joss.01722).
 
-{% include gallery %}
+![](/images/software/ht_framework.png)
 
-To install the latest release on CRAN:
+<!-- {% include gallery %} -->
 
-```r
-install.packages("BayesPostEst")
-```
-
-The latest [development version](https://github.com/ShanaScogin/BayesPostEst) on GitHub can be installed with:
-
-```r
-library(remotes)
-install_github("ShanaScogin/BayesPostEst")
-```
-
-You can try out the `mcmcCoefPlot` function from the package in the interactive R console below:
 
 # RWmisc
 
@@ -58,7 +42,7 @@ I've collected convenience functions that I've written to address issues I frequ
 - Correcting for overlapping polygons when aggregating raster data to polygons
 - My custom minimal ggplot2 theme
 
-![](/images/software/spatial_weighting.png)
+
 
 To install the latest release on CRAN:
 
