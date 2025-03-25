@@ -16,3 +16,4 @@ author_profile: true
 {% endfor %}
 
 <sup>*</sup> Equal authorship
+<sup>†</sup> Corresponding author
