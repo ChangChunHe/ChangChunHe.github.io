@@ -18,6 +18,7 @@ header:
   og_image: "software/spatial_weighting.png"
 ---
 
+在进行第一性原理计算的研究中，我们开发了一系列的开源软件来方便本课题组和同行进行研究。
 
 # Pyvaspflow
 
